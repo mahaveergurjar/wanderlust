@@ -1,32 +1,32 @@
 <% layout("/layouts/boilerplate") %>
 
 <style>
- #filters {
+  #filters {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
   }
-  
+
   .filter {
     text-align: center;
     margin-right: 2rem;
     margin-top: 2rem;
     opacity: 0.7;
   }
-  
+
   .filter:hover {
     opacity: 1;
     cursor: pointer;
   }
-  
+
   .filter p {
     font-size: 0.8rem;
   }
-  
+
   .tax-info {
     display: none;
   }
-  
+
   .tax-toggle {
     border: 1px solid black;
     border-radius: 1rem;
@@ -36,20 +36,20 @@
     display: flex;
     align-items: center;
   }
-  
+
   /* Add horizontal scroll to .filter class for phone view */
   @media (max-width: 768px) {
     #filters {
       flex-wrap: nowrap; /* Prevent wrapping of filters */
-      overflow-x: auto;  /* Enable horizontal scrolling for the filter container */
+      overflow-x: auto; /* Enable horizontal scrolling for the filter container */
       padding-right: 0rem; /* Add some padding for better spacing */
     }
-  
+
     .filter {
       min-width: 10px; /* Ensure filters have enough width to scroll */
-      flex: 0 0 auto;  /* Prevent the filter from shrinking */
+      flex: 0 0 auto; /* Prevent the filter from shrinking */
     }
-  
+
     .tax-toggle {
       margin-left: 0; /* Reset margin-left */
       margin-top: 1rem; /* Add top margin for spacing */
@@ -61,7 +61,7 @@
 
 <div id="filters">
   <div class="filter">
-    <div><i class="fa-solid fa-fire"></i></div> 
+    <div><i class="fa-solid fa-fire"></i></div>
     <p>Trending</p>
   </div>
   <div class="filter">
@@ -69,7 +69,7 @@
     <p>Rooms</p>
   </div>
   <div class="filter">
-    <div><i class="fa-solid fa-mountain-city"></i></div> 
+    <div><i class="fa-solid fa-mountain-city"></i></div>
     <p>Iconic Cities</p>
   </div>
   <div class="filter">
@@ -107,49 +107,77 @@
 
   <div class="tax-toggle">
     <div class="form-check-reverse form-switch">
-      <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
-      <label class="form-check-label" for="flexSwitchCheckDefault">Display total after taxes</label>
+      <input
+        class="form-check-input"
+        type="checkbox"
+        role="switch"
+        id="flexSwitchCheckDefault"
+      />
+      <label class="form-check-label" for="flexSwitchCheckDefault"
+        >Display total after taxes</label
+      >
     </div>
   </div>
-
 </div>
 <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
-        <% for(let listing of allListings) { %>
-        <a href="/listings/<%= listing._id %>" class="listing-link">
-          <div class="card col listing-card">
-            <img
-              src="<%= listing.image.url %>"
-              class="card-img-top"
-              alt="listing_image"
-              style="height: 20rem"
-            />
-            <div class="card-img-overlay"></div>
-            <div class="card-body">
-              <p class="card-text">
-                <b><%= listing.title %></b><br />
-                &#8377; <%= listing.price.toLocaleString("en-IN") %> / night
-                <i class ="tax-info"> &nbsp; &nbsp; +18% GST</i>
-                <br />
-              </p>
-            </div>
-          </div>
-        </a>
-        <% } %>
+  <% for(let listing of allListings) { %>
+  <a href="/listings/<%= listing._id %>" class="listing-link">
+    <div class="card col listing-card">
+      <img
+        src="<%= listing.image.url %>"
+        class="card-img-top"
+        alt="listing_image"
+        style="height: 20rem"
+      />
+      <div class="card-img-overlay"></div>
+      <div class="card-body">
+        <p class="card-text">
+          <b><%= listing.title %></b><br />
+          <span
+            class="price"
+            data-original-price="<%= listing.price.toLocaleString('en-IN') %>"
+          >
+            &#8377; <%= listing.price.toLocaleString("en-IN") %> / night
+          </span>
+          <span class="tax-info"> &nbsp; &nbsp;+18% GST</span>
+          <br />
+        </p>
       </div>
     </div>
-  </div>
+  </a>
+  <% } %>
 </div>
 
 <script>
-  let taxSwitch = document.getElementById("flexSwitchCheckDefault");
-  taxSwitch.addEventListener("click", () => {
-    let taxInfo = document.getElementsByClassName("tax-info");
-    for(info of taxInfo) {
-      if(info.style.display != "inline"){
-        info.style.display = "inline"
-      } else{
-        info.style.display = "none";
+  document.addEventListener("DOMContentLoaded", function () {
+    let taxSwitch = document.getElementById("flexSwitchCheckDefault");
+
+    taxSwitch.addEventListener("change", function () {
+      let taxInfo = document.querySelectorAll(".tax-info");
+      let priceElements = document.querySelectorAll(".price");
+
+      if (taxSwitch.checked) {
+        // Show GST info and update price with GST
+        taxInfo.forEach((info) => (info.style.display = "inline"));
+
+        priceElements.forEach((priceElem) => {
+          let originalPrice = parseFloat(
+            priceElem.dataset.originalPrice.replace(/[^0-9.]/g, "")
+          );
+          let priceWithTax = originalPrice * 1.18; // Add 18% GST
+          priceElem.innerHTML = `&#8377; ${priceWithTax.toLocaleString(
+            "en-IN"
+          )} / night`;
+        });
+      } else {
+        // Hide GST info and revert to original price
+        taxInfo.forEach((info) => (info.style.display = "none"));
+
+        priceElements.forEach((priceElem) => {
+          let originalPrice = priceElem.dataset.originalPrice;
+          priceElem.innerHTML = `&#8377; ${originalPrice} / night`;
+        });
       }
-    }
-  })
+    });
+  });
 </script>
