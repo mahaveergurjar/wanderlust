@@ -1,19 +1,19 @@
 <% layout("/layouts/boilerplate") %>
 
 <style>
-  #filters {
+ #filters {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
   }
-
-  .filter{
+  
+  .filter {
     text-align: center;
     margin-right: 2rem;
     margin-top: 2rem;
     opacity: 0.7;
   }
-
+  
   .filter:hover {
     opacity: 1;
     cursor: pointer;
@@ -22,19 +22,40 @@
   .filter p {
     font-size: 0.8rem;
   }
-
+  
   .tax-info {
     display: none;
   }
-
-  .tax-toggle{
+  
+  .tax-toggle {
     border: 1px solid black;
     border-radius: 1rem;
     height: 2.5rem;
     padding: 1rem;
-    margin-left: 2rem;
+    margin-left: auto; /* Move to the right end of the container */
     display: flex;
     align-items: center;
+  }
+  
+  /* Add horizontal scroll to .filter class for phone view */
+  @media (max-width: 768px) {
+    #filters {
+      flex-wrap: nowrap; /* Prevent wrapping of filters */
+      overflow-x: auto;  /* Enable horizontal scrolling for the filter container */
+      padding-right: 0rem; /* Add some padding for better spacing */
+    }
+  
+    .filter {
+      min-width: 10px; /* Ensure filters have enough width to scroll */
+      flex: 0 0 auto;  /* Prevent the filter from shrinking */
+    }
+  
+    .tax-toggle {
+      margin-left: 0; /* Reset margin-left */
+      margin-top: 1rem; /* Add top margin for spacing */
+      flex: 0 0 70%; /* Make the toggle button take up full width on a new line */
+      text-align: center; /* Center align the toggle button */
+    }
   }
 </style>
 
