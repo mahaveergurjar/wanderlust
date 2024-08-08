@@ -3,27 +3,65 @@
     background-color: #fe424d;
     color: #fff;
     border-radius: 25px;
-    padding: 0 1rem 0 1rem;
+    padding: 0 1rem;
   }
+
   .search-btn:hover {
     background-color: #fe424d;
     color: #fff;
   }
+
   .search-btn i {
     display: inline;
     margin-right: 0.5rem;
   }
+
   .search-input {
     border-radius: 25px;
-    padding: 0.5rem 3rem 0.5rem 3rem;
+    padding: 0.5rem 3rem;
     font-size: 0.8rem;
   }
+
+  /* Media query to handle mobile view */
+  @media (max-width: 768px) {
+    .navbar-collapse {
+      background-color: #fff;
+      padding: 1rem;
+    }
+
+    .navbar-nav {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .navbar-nav .nav-link {
+      padding: 0.5rem 0;
+      display: block;
+      width: 100%;
+    }
+
+    .search-input {
+      width: calc(100% - 3rem);
+      margin-bottom: 0.5rem;
+    }
+
+    .search-btn {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    form.d-flex {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
 </style>
+
 <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
   <div class="container-fluid">
-    <a class="navbar-brand" href="/listings"
-      ><i class="fa-regular fa-compass"></i
-    ></a>
+    <a class="navbar-brand" href="/listings">
+      <i class="fa-regular fa-compass"></i>
+    </a>
     <button
       class="navbar-toggler"
       type="button"
