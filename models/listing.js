@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Review = require("./review.js");
-const { fileLoader } = require("ejs");
 
 const listingSchema = new Schema({
   title: {
@@ -16,6 +15,16 @@ const listingSchema = new Schema({
   price: Number,
   location: String,
   country: String,
+  coordinates: {
+    latitude: {
+      type: String,
+      required: true,
+    },
+    longitude: {
+      type: String,
+      required: true,
+    },
+  },
   reviews: [
     {
       type: Schema.Types.ObjectId,
@@ -28,6 +37,7 @@ const listingSchema = new Schema({
   },
 });
 
+// Middleware to delete associated reviews when a listing is deleted
 listingSchema.post("findOneAndDelete", async (listing) => {
   if (listing) {
     await Review.deleteMany({ _id: { $in: listing.reviews } });
