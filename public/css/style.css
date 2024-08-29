@@ -119,7 +119,8 @@ body {
 }
 
 /* MAP */
-#map { 
-    height: 400px;
+#map {
+    height: 300px;
     width: 100%;
- }
+    border-radius: 1rem !important;
+}
