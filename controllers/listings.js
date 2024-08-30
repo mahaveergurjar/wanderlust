@@ -1,7 +1,5 @@
+const axios = require("axios");
 const Listing = require("../models/listing");
-// const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
-// const mapToken = process.env.MAP_TOKEN;
-// const GeocodingClient = mbxGeocoding({ accessToken: mapToken });
 
 module.exports.index = async (req, res) => {
   const allListings = await Listing.find({});
@@ -24,31 +22,54 @@ module.exports.showListing = async (req, res) => {
     .populate("owner");
   if (!listing) {
     req.flash("error", "Listing you requested for does not exist!");
-    res.redirect("/listings");
+    return res.redirect("/listings");
   }
   console.log(listing);
   res.render("listings/show.ejs", { listing });
 };
 
 module.exports.createListing = async (req, res, next) => {
-  // let response = await geocodingClient
-  //   .forwardGeocode({
-  //     query: req.body.listing.location,
-  //     limit: 1,
-  //   })
-  //   .send();
+  const { location } = req.body.listing;
 
-  // console.log(response.body.feature.[0].geometry);
-  // req.seq("done!");
+  try {
+    // Fetch coordinates using OpenStreetMap Nominatim API
+    const geoResponse = await axios.get("https://nominatim.openstreetmap.org/search", {
+      params: {
+        q: location,
+        format: "json",
+        limit: 1
+      }
+    });
 
-  let url = req.file.path;
-  let filename = req.file.filename;
-  const newListing = new Listing(req.body.listing);
-  newListing.owner = req.user._id;
-  newListing.image = { url, filename };
-  await newListing.save();
-  req.flash("success", "New Listing Created!");
-  res.redirect("/listings");
+    const geoData = geoResponse.data[0];
+    if (!geoData) {
+      req.flash("error", "Location not found. Please enter a valid location.");
+      return res.redirect("/listings/new");
+    }
+
+    const coordinates = {
+      latitude: geoData.lat,
+      longitude: geoData.lon
+    };
+
+    let url = req.file.path;
+    let filename = req.file.filename;
+    const newListing = new Listing({
+      ...req.body.listing,
+      owner: req.user._id,
+      image: { url, filename },
+      coordinates // Add the coordinates to the listing
+    });
+
+    await newListing.save();
+    req.flash("success", "New Listing Created!");
+    res.redirect("/listings");
+
+  } catch (error) {
+    console.error("Error fetching geolocation data:", error);
+    req.flash("error", "Error occurred while fetching location data.");
+    res.redirect("/listings/new");
+  }
 };
 
 module.exports.renderEditForm = async (req, res) => {
@@ -56,7 +77,7 @@ module.exports.renderEditForm = async (req, res) => {
   const listing = await Listing.findById(id);
   if (!listing) {
     req.flash("error", "Listing you requested for does not exist!");
-    res.redirect("/listings");
+    return res.redirect("/listings");
   }
 
   let originalImageUrl = listing.image.url;
@@ -66,17 +87,44 @@ module.exports.renderEditForm = async (req, res) => {
 
 module.exports.updateListing = async (req, res) => {
   let { id } = req.params;
-  let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+  const { location } = req.body.listing;
 
-  if (typeof req.file !== "undefined") {
-    let url = req.file.path;
-    let filename = req.file.filename;
-    listing.image = { url, filename };
+  try {
+    let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+
+    if (typeof req.file !== "undefined") {
+      let url = req.file.path;
+      let filename = req.file.filename;
+      listing.image = { url, filename };
+    }
+
+    // Fetch updated coordinates if the location has changed
+    const geoResponse = await axios.get("https://nominatim.openstreetmap.org/search", {
+      params: {
+        q: location,
+        format: "json",
+        limit: 1
+      }
+    });
+
+    const geoData = geoResponse.data[0];
+    if (geoData) {
+      listing.coordinates = {
+        latitude: geoData.lat,
+        longitude: geoData.lon
+      };
+    }
+
     await listing.save();
-  }
 
-  req.flash("success", "Listing Updated!");
-  res.redirect(`/listings/${id}`);
+    req.flash("success", "Listing Updated!");
+    res.redirect(`/listings/${id}`);
+
+  } catch (error) {
+    console.error("Error updating listing:", error);
+    req.flash("error", "Error occurred while updating listing data.");
+    res.redirect(`/listings/${id}/edit`);
+  }
 };
 
 module.exports.destroyListing = async (req, res) => {
