@@ -5,6 +5,7 @@ if (process.env.NODE_ENV !== "production") {
 const cors = require("cors");
 const express = require("express");
 const app = express();
+app.set("trust proxy", 1); // Trust first proxy (Render/Heroku/Vercel)
 const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
